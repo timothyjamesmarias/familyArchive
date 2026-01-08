@@ -53,15 +53,13 @@
                 <ul class="space-y-2">
                     <li>
                         <a th:href="@{/admin/dashboard}"
-                           class="block px-4 py-2 rounded hover:bg-gray-100 transition-colors"
-                           th:classappend="${#strings.contains(#httpServletRequest.requestURI, '/admin/dashboard')} ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-700'">
+                           class="block px-4 py-2 rounded hover:bg-gray-100 transition-colors text-gray-700">
                             Dashboard
                         </a>
                     </li>
                     <li>
                         <a th:href="@{/admin/users}"
-                           class="block px-4 py-2 rounded hover:bg-gray-100 transition-colors"
-                           th:classappend="${#strings.contains(#httpServletRequest.requestURI, '/admin/users')} ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-700'">
+                           class="block px-4 py-2 rounded hover:bg-gray-100 transition-colors text-gray-700">
                             Users
                         </a>
                     </li>
