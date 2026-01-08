@@ -38,3 +38,21 @@ out/
 
 ### Kotlin ###
 .kotlin
+
+### Node.js / Frontend ###
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+.pnpm-store/
+
+# Vite build output
+src/main/resources/static/dist/
+dist/
+
+# Environment files
+.env.local
+.env.*.local

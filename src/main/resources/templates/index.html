@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+
+<head>
+    <title>Home - Family Archive</title>
+</head>
+
+<div layout:fragment="content">
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white rounded-lg shadow-lg p-8">
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">Welcome to Family Archive</h1>
+            <p class="text-lg text-gray-600 mb-6">
+                Your family's stories, preserved for generations.
+            </p>
+
+            <div class="space-x-4">
+                <button class="btn-primary">Get Started</button>
+                <button class="btn-secondary">Learn More</button>
+            </div>
+        </div>
+
+        <!-- Example: Container for embedded SPA -->
+        <div id="example-spa-container" class="mt-8"></div>
+    </div>
+</div>
+
+<th:block layout:fragment="scripts">
+    <!-- Load SPA for this page -->
+    <th:block th:if="${@environment.getActiveProfiles().contains('dev')}">
+        <script type="module" src="http://localhost:5173/js/apps/example-spa.ts"></script>
+    </th:block>
+    <th:block th:unless="${@environment.getActiveProfiles().contains('dev')}">
+        <script type="module" th:src="@{/dist/assets/example-spa.js}"></script>
+    </th:block>
+</th:block>
+
+</html>

@@ -4,6 +4,7 @@ plugins {
     id("org.springframework.boot") version "4.0.1"
     id("io.spring.dependency-management") version "1.1.7"
     kotlin("plugin.jpa") version "2.2.21"
+    id("com.github.node-gradle.node") version "7.1.0"
 }
 
 group = "com.timothymarias"
@@ -27,6 +28,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
+    implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect")
     implementation("org.flywaydb:flyway-database-postgresql")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.thymeleaf.extras:thymeleaf-extras-springsecurity6")
@@ -55,4 +57,40 @@ allOpen {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+// Node.js configuration for Vite frontend build
+node {
+    download = true
+    version = "22.12.0"
+    npmVersion = "10.9.2"
+    workDir = file("${project.projectDir}/.gradle/nodejs")
+    npmWorkDir = file("${project.projectDir}/.gradle/npm")
+    nodeProjectDir = file("${project.projectDir}")
+}
+
+// Install npm dependencies
+val npmInstall by tasks.getting(com.github.gradle.node.npm.task.NpmInstallTask::class)
+
+// Build frontend with Vite
+val buildFrontend by tasks.registering(com.github.gradle.node.npm.task.NpmTask::class) {
+    dependsOn(npmInstall)
+    args.set(listOf("run", "build"))
+    inputs.dir("src/main/frontend")
+    inputs.files("vite.config.ts", "tailwind.config.js", "postcss.config.js")
+    outputs.dir("src/main/resources/static/dist")
+}
+
+// Ensure frontend is built before processing resources
+tasks.named("processResources") {
+    dependsOn(buildFrontend)
+}
+
+// Clean frontend build outputs
+tasks.named("clean") {
+    doLast {
+        delete("src/main/resources/static/dist")
+        delete(".gradle/nodejs")
+        delete(".gradle/npm")
+    }
 }
