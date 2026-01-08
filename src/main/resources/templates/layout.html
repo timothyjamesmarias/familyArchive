@@ -1,19 +1,21 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${title ?: 'Family Archive'}">Family Archive</title>
 
     <!-- Development mode: Vite dev server -->
-    <th:block th:if="${@environment.getActiveProfiles().contains('dev')}">
+    <th:block th:if="${#arrays.contains(@environment.getActiveProfiles(), 'dev')}">
         <script type="module" src="http://localhost:5173/@vite/client"></script>
         <script type="module" src="http://localhost:5173/js/main.ts"></script>
         <link rel="stylesheet" href="http://localhost:5173/css/main.css">
     </th:block>
 
     <!-- Production mode: Built assets -->
-    <th:block th:unless="${@environment.getActiveProfiles().contains('dev')}">
+    <th:block th:unless="${#arrays.contains(@environment.getActiveProfiles(), 'dev')}">
         <link rel="stylesheet" th:href="@{/dist/assets/main.css}">
         <script type="module" th:src="@{/dist/assets/app.js}"></script>
     </th:block>
