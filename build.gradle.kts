@@ -1,3 +1,10 @@
+buildscript {
+    dependencies {
+        classpath("org.postgresql:postgresql:42.7.5")
+        classpath("org.flywaydb:flyway-database-postgresql:11.14.1")
+    }
+}
+
 plugins {
     kotlin("jvm") version "2.2.21"
     kotlin("plugin.spring") version "2.2.21"
@@ -5,6 +12,7 @@ plugins {
     id("io.spring.dependency-management") version "1.1.7"
     kotlin("plugin.jpa") version "2.2.21"
     id("com.github.node-gradle.node") version "7.1.0"
+    id("org.flywaydb.flyway") version "11.14.1"
 }
 
 group = "com.timothymarias"
@@ -93,4 +101,12 @@ tasks.named("clean") {
         delete(".gradle/nodejs")
         delete(".gradle/npm")
     }
+}
+
+// Flyway configuration for Gradle tasks
+flyway {
+    url = "jdbc:postgresql://localhost:5432/familyarchive"
+    user = "familyarchive"
+    password = "familyarchive"
+    locations = arrayOf("classpath:db/migration")
 }
