@@ -10,9 +10,30 @@
 
 <div layout:fragment="content">
     <div class="max-w-6xl mx-auto">
-        <div class="bg-white rounded-lg shadow-lg p-8 mb-8">
-            <h1 class="text-4xl font-bold text-gray-900 mb-4" th:text="${title}">Welcome to Family Archive</h1>
+        <!-- Hero Section -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 mb-8">
+            <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-4" th:text="${title}">Welcome to Family Archive</h1>
+            <p class="text-lg text-gray-600 dark:text-gray-300 mb-6" th:text="${message}">
+                Your family's stories, preserved for generations.
+            </p>
+
+            <div class="space-x-4">
+                <button class="btn-primary">Get Started</button>
+                <button class="btn-secondary">Learn More</button>
+            </div>
         </div>
+
+        <!-- Features Grid -->
+        <div class="grid md:grid-cols-3 gap-6 mb-8">
+            <div th:each="feature : ${features}"
+                 class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
+                <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2" th:text="${feature.title}">Feature Title</h3>
+                <p class="text-gray-600 dark:text-gray-300" th:text="${feature.description}">Feature description goes here.</p>
+            </div>
+        </div>
+
+        <!-- Example: Container for embedded SPA -->
+        <div id="example-spa-container" class="mt-8"></div>
     </div>
 </div>
 </html>

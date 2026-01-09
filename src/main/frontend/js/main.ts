@@ -1,4 +1,6 @@
 // Main application entry point
+import './common/darkMode'
+
 console.log('Family Archive - Frontend initialized')
 
 // Example: Initialize common functionality
