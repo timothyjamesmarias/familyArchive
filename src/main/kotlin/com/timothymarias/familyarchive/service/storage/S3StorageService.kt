@@ -18,7 +18,9 @@ import java.time.Duration
 @Service
 @ConditionalOnProperty(name = ["storage.type"], havingValue = "s3")
 class S3StorageService(
-    private val storageProperties: StorageProperties
+    private val storageProperties: StorageProperties,
+    s3Client: S3Client? = null,
+    s3Presigner: S3Presigner? = null
 ) : StorageService {
 
     private val logger = LoggerFactory.getLogger(S3StorageService::class.java)
@@ -27,22 +29,32 @@ class S3StorageService(
     private val bucketName: String
 
     init {
-        val credentials = AwsBasicCredentials.create(
-            storageProperties.s3.accessKey,
-            storageProperties.s3.secretKey
-        )
-
-        s3Client = S3Client.builder()
-            .region(Region.of(storageProperties.s3.region))
-            .credentialsProvider(StaticCredentialsProvider.create(credentials))
-            .build()
-
-        s3Presigner = S3Presigner.builder()
-            .region(Region.of(storageProperties.s3.region))
-            .credentialsProvider(StaticCredentialsProvider.create(credentials))
-            .build()
-
         bucketName = storageProperties.s3.bucket
+
+        // Use provided clients if available (for testing), otherwise create new ones
+        this.s3Client = s3Client ?: run {
+            val credentials = AwsBasicCredentials.create(
+                storageProperties.s3.accessKey,
+                storageProperties.s3.secretKey
+            )
+
+            S3Client.builder()
+                .region(Region.of(storageProperties.s3.region))
+                .credentialsProvider(StaticCredentialsProvider.create(credentials))
+                .build()
+        }
+
+        this.s3Presigner = s3Presigner ?: run {
+            val credentials = AwsBasicCredentials.create(
+                storageProperties.s3.accessKey,
+                storageProperties.s3.secretKey
+            )
+
+            S3Presigner.builder()
+                .region(Region.of(storageProperties.s3.region))
+                .credentialsProvider(StaticCredentialsProvider.create(credentials))
+                .build()
+        }
 
         logger.info("S3 storage initialized with bucket: $bucketName in region: ${storageProperties.s3.region}")
     }

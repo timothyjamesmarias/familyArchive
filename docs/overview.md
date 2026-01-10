@@ -34,7 +34,3 @@ Uploaded documents could be photos, letters, formal documents, ledgers, and can 
   - Specific commentaries and annotations for photos
 - Commentaries
   - Text for pacards, captions for photos
-
-
-
-
