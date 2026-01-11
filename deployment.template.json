@@ -1,0 +1,27 @@
+{
+  "containers": {
+    "family-archive": {
+      "image": "YOUR_AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/family-archive:latest",
+      "environment": {
+        "SPRING_DATASOURCE_URL": "jdbc:postgresql://YOUR_RDS_ENDPOINT:5432/familyarchive",
+        "SPRING_DATASOURCE_USERNAME": "familyarchive",
+        "SPRING_DATASOURCE_PASSWORD": "YOUR_DATABASE_PASSWORD",
+        "SPRING_PROFILES_ACTIVE": "prod",
+        "SPRING_JPA_HIBERNATE_DDL_AUTO": "validate"
+      },
+      "ports": {
+        "8080": "HTTP"
+      }
+    }
+  },
+  "publicEndpoint": {
+    "containerName": "family-archive",
+    "containerPort": 8080,
+    "healthCheck": {
+      "path": "/",
+      "intervalSeconds": 30,
+      "timeoutSeconds": 5,
+      "successCodes": "200-499"
+    }
+  }
+}
