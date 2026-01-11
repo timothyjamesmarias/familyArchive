@@ -1,0 +1,113 @@
+name: Build and Deploy to AWS Lightsail
+
+on:
+  push:
+    branches: [ master, main ]
+  workflow_dispatch:  # Allow manual trigger
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: family-archive
+  LIGHTSAIL_SERVICE_NAME: family-archive-service
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v2
+
+    - name: Build Docker image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+    - name: Push image to Amazon ECR
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+    - name: Deploy to Lightsail
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        # Create deployment configuration
+        cat > deployment.json << EOF
+        {
+          "containers": {
+            "family-archive": {
+              "image": "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG",
+              "environment": {
+                "SPRING_DATASOURCE_URL": "${{ secrets.DATABASE_URL }}",
+                "SPRING_DATASOURCE_USERNAME": "${{ secrets.DATABASE_USERNAME }}",
+                "SPRING_DATASOURCE_PASSWORD": "${{ secrets.DATABASE_PASSWORD }}",
+                "SPRING_PROFILES_ACTIVE": "prod",
+                "SPRING_JPA_HIBERNATE_DDL_AUTO": "validate"
+              },
+              "ports": {
+                "8080": "HTTP"
+              }
+            }
+          },
+          "publicEndpoint": {
+            "containerName": "family-archive",
+            "containerPort": 8080,
+            "healthCheck": {
+              "path": "/",
+              "intervalSeconds": 30,
+              "timeoutSeconds": 5,
+              "successCodes": "200-499"
+            }
+          }
+        }
+        EOF
+
+        # Deploy to Lightsail
+        aws lightsail create-container-service-deployment \
+          --service-name $LIGHTSAIL_SERVICE_NAME \
+          --cli-input-json file://deployment.json
+
+    - name: Wait for deployment
+      run: |
+        echo "Deployment initiated. Checking status..."
+        for i in {1..30}; do
+          STATE=$(aws lightsail get-container-services \
+            --service-name $LIGHTSAIL_SERVICE_NAME \
+            --query 'containerServices[0].state' \
+            --output text)
+          echo "Current state: $STATE"
+          if [ "$STATE" = "RUNNING" ]; then
+            echo "✅ Deployment successful!"
+            exit 0
+          fi
+          sleep 10
+        done
+        echo "⚠️ Deployment is taking longer than expected. Check AWS Console."
+
+    - name: Get application URL
+      if: success()
+      run: |
+        URL=$(aws lightsail get-container-services \
+          --service-name $LIGHTSAIL_SERVICE_NAME \
+          --query 'containerServices[0].url' \
+          --output text)
+        echo "🚀 Application deployed to: $URL"

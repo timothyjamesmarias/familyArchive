@@ -17,8 +17,6 @@ RUN ./gradlew dependencies --no-daemon || true
 # Copy source code
 COPY src src
 COPY vite.config.ts .
-COPY tsconfig.json .
-COPY tsconfig.node.json .
 COPY postcss.config.js .
 COPY tailwind.config.js .
 COPY package.json .
